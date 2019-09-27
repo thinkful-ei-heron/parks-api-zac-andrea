@@ -9,19 +9,17 @@ const searchURL= 'https://developer.nps.gov/api/v1/';
 function onSubmit() {
 	$('.search').submit( event => {
 		event.preventDefault();
-		let  stateSearch = $('.states').val();
-		console.log(stateSearch);
+        let  stateSearch = $('.states').val();
+        let  maxNum = $('.max').val();
 		$('.results').html('');
-		getInfo(stateSearch);
+		getInfo(stateSearch,maxNum);
 	});
 }
 
-function getInfo (state) {
-	fetch(`${searchURL}/parks?stateCode=${state}${apiKey}`)
+function getInfo (state,max) {
+	fetch(`${searchURL}/parks?stateCode=${state}&limit=${max}${apiKey}`)
     .then(result => result.json())
-    .then(jsonData => console.log(jsonData))
     .then(jsonData => extractData(jsonData))
-    .then(jsonData => console.log(jsonData))
 	.catch(e => {
 		console.log(e);
 	});
@@ -29,21 +27,25 @@ function getInfo (state) {
 }
 
 function extractData(parkData) {
-	let data = {
-        "fullName": parkData.data[0].fullName,
-		"description": parkData.data[0].description,
-		"url": parkData.data[0].url
-	};
+    parkData.data.forEach(data => {
+        let {
+            fullName,
+            description,
+            url
+        } = data;
 
-	if (data.status === 'error') notFound(breed);
-	else {
-	$('.output').append(`
-			<img src='${data.message}'>
-		`);
-}}
+        $('.results').append(`
+            <h2>${data.fullName}</h2>
+            <p>${data.description}</p>
+            <a href=${data.url}>${data.url}</a>`
+        );
+    
+    });
+    
+}
 
 function notFound(search) {
-	$('.output').append(`
+	$('.results').append(`
 			<h2>Request for ${search} cannot be found!</h2>
 		`);
 }
